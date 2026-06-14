@@ -1,4 +1,4 @@
-import { searchService } from "@/src/services/searchService"; // Ajuste o seu import do service
+import { searchService } from "@/src/services/searchService";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Car, ChevronLeft, Layers } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
@@ -6,12 +6,13 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CategoryList() {
   const router = useRouter();
@@ -46,28 +47,36 @@ export default function CategoryList() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* 1. HEADER DE NAVEGAÇÃO FIXO (Sem o botão de ver produtos aqui!) */}
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      {/* HEADER PADRONIZADO DA MARCA */}
+      <View style={styles.header}>
+        <Image
+          source={require("../assets/logo.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      </View>
+
+      {/* SUB-HEADER APENAS COM O BOTÃO VOLTAR (MIGALHAS REMOVIDAS) */}
       <View style={styles.navHeader}>
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.backButton}
+          activeOpacity={0.6}
         >
-          <ChevronLeft size={24} color="#484848" />
+          <ChevronLeft size={20} color="#FC4C02" strokeWidth={3} />
+          <Text style={styles.backButtonText}>Voltar</Text>
         </TouchableOpacity>
-        <Text style={styles.navTitle}>Soft Eletrônica {">"} Pesquisa</Text>
       </View>
 
-      {/* 2. LISTA DE CATEGORIAS */}
+      {/* LISTA DE CATEGORIAS */}
       <FlatList
         data={categories}
         keyExtractor={(item, index) => `${item.categoriaId || index}-${index}`}
         contentContainerStyle={styles.listContent}
-        renderItem={(
-          { item }, // <--- O 'item' nasce AQUI
-        ) => (
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item }) => (
           <View style={styles.card}>
-            {/* Cabeçalho do Card */}
             <View style={styles.cardHeader}>
               {item.imgUrl ? (
                 <Image
@@ -76,23 +85,21 @@ export default function CategoryList() {
                 />
               ) : (
                 <Layers
-                  size={28}
-                  color="#484848"
+                  size={24}
+                  color="#1C61AC"
                   style={styles.categoryIconFallback}
                 />
               )}
               <Text style={styles.categoryName}>{item.name}</Text>
             </View>
 
-            {/* Miolo do Card */}
             <View style={styles.cardBody}>
-              <Car size={26} color="#484848" style={styles.carIcon} />
+              <Car size={20} color="#74747A" style={styles.carIcon} />
               <Text style={styles.carText}>
                 {item.modelo} {item.ano}
               </Text>
             </View>
 
-            {/* 3. O BOTÃO DEVE FICAR AQUI DENTRO (Onde o 'item' existe) */}
             <TouchableOpacity
               style={styles.actionButton}
               activeOpacity={0.8}
@@ -102,12 +109,12 @@ export default function CategoryList() {
                   params: {
                     modelId: modeloId,
                     year: anoParam,
-                    categoryId: String(item.categoriaId), // Agora o TS reconhece!
+                    categoryId: String(item.categoriaId),
                   },
                 });
               }}
             >
-              <Text style={styles.actionButtonText}>VER MAIS</Text>
+              <Text style={styles.actionButtonText}>VER PRODUTOS</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -119,7 +126,7 @@ export default function CategoryList() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F7",
+    backgroundColor: "#EBF1F8",
   },
   center: {
     flex: 1,
@@ -130,99 +137,121 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     color: "#484848",
-    fontSize: 16,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  header: {
+    alignItems: "center",
+    paddingVertical: 14,
+    backgroundColor: "#FFFFFF",
+  },
+  logo: {
+    width: 180,
+    height: 48,
   },
   navHeader: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    justifyContent: "flex-start", // Garante o botão alinhado à esquerda
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     backgroundColor: "#FFFFFF",
     borderBottomWidth: 1,
     borderBottomColor: "#DFDFE7",
   },
   backButton: {
-    marginRight: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F5F5F7",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#E4E4ED",
   },
-  navTitle: {
-    fontSize: 14,
+  backButtonText: {
+    fontSize: 13,
     color: "#484848",
-    fontWeight: "500",
+    fontWeight: "700",
+    marginLeft: 2,
   },
   listContent: {
-    padding: 16,
+    padding: 20,
+    paddingBottom: 40,
   },
   card: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
+    borderRadius: 24,
     marginBottom: 20,
     overflow: "hidden",
     borderWidth: 1,
     borderColor: "#DFDFE7",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowColor: "#1C61AC",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    elevation: 3,
   },
   cardHeader: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#E2E2E9",
+    backgroundColor: "#F4F7FB",
     paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderBottomLeftRadius: 36,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EBF1F8",
   },
   categoryIcon: {
-    width: 32,
-    height: 32,
+    width: 26,
+    height: 26,
     resizeMode: "contain",
-    marginRight: 14,
+    marginRight: 12,
   },
   categoryIconFallback: {
-    marginRight: 14,
+    marginRight: 12,
   },
   categoryName: {
     flex: 1,
     fontSize: 15,
     fontWeight: "800",
-    color: "#333333",
+    color: "#252429",
     letterSpacing: 0.3,
   },
   cardBody: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 24,
-    paddingHorizontal: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 20,
   },
   carIcon: {
-    marginRight: 10,
+    marginRight: 8,
   },
   carText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#484848",
-    textTransform: "uppercase",
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#74747A",
   },
   actionButton: {
     backgroundColor: "#1C61AC",
-    paddingVertical: 12,
-    marginHorizontal: 50,
-    marginBottom: 20,
-    borderRadius: 8,
+    height: 48,
+    justifyContent: "center",
     alignItems: "center",
+    borderTopLeftRadius: 16,
+    borderBottomRightRadius: 16,
+    borderTopRightRadius: 4,
+    borderBottomLeftRadius: 4,
+    marginHorizontal: 20,
+    marginBottom: 16,
+    shadowColor: "#1C61AC",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 2,
   },
   actionButtonText: {
     color: "#FFFFFF",
     fontWeight: "bold",
-    fontSize: 14,
-    letterSpacing: 0.8,
-  },
-  emptyText: {
-    textAlign: "center",
-    color: "#A0A0AB",
-    marginTop: 60,
-    fontSize: 16,
+    fontSize: 13,
+    letterSpacing: 1.2,
   },
 });

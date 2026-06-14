@@ -1,4 +1,4 @@
-import { searchService } from "@/src/services/searchService"; // Ajuste o seu import do service
+import { searchService } from "@/src/services/searchService";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
@@ -6,12 +6,14 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+
+// IMPORTAÇÃO CORRETA DA ÁREA SEGURA CORRIGINDO O ALERTA DO TERMINAL
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProductList() {
   const router = useRouter();
@@ -37,7 +39,6 @@ export default function ProductList() {
     }
   }, [model, year, category]);
 
-  // Função para limitar o texto do resumo igual ao 'createExcerpt(resume, 33)' do site
   function createExcerpt(text: string, limit: number) {
     if (!text) return "";
     return text.length > limit ? text.substring(0, limit) + "..." : text;
@@ -53,35 +54,43 @@ export default function ProductList() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* HEADER DE NAVEGAÇÃO INTERNA */}
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      {/* 1. HEADER PADRONIZADO COM A LOGO DA MARCA */}
+      <View style={styles.header}>
+        <Image
+          source={require("../assets/logo.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      </View>
+
+      {/* 2. SUB-HEADER LIMPO APENAS COM O BOTÃO DE VOLTAR CAPSULA */}
       <View style={styles.navHeader}>
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.backButton}
+          activeOpacity={0.6}
         >
-          <ChevronLeft size={24} color="#484848" />
+          <ChevronLeft size={20} color="#FC4C02" strokeWidth={3} />
+          <Text style={styles.backButtonText}>Voltar</Text>
         </TouchableOpacity>
-        <Text style={styles.navTitle}>
-          Soft Eletrônica {">"} Pesquisa {">"} Produtos
-        </Text>
       </View>
 
-      {/* LISTA DE PRODUTOS */}
+      {/* 3. LISTA DE PRODUTOS */}
       <FlatList
         data={products}
         keyExtractor={(item, index) => `${item.id || index}-${index}`}
         contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item }) => {
           if (!item) return null;
 
-          // Converte os valores para número para bater com a regra do site: (Number(vidro) > 0)
           const qtdConvencional = Number(item.vidroConvencional) || 0;
           const qtdInteligente = Number(item.vidroInteligente) || 0;
 
           return (
             <View style={styles.card}>
-              {/* 1. CONTAINER DA IMAGEM BRANCO (CURVATURA TR E BL IGUAL AO SITE) */}
+              {/* Container da Imagem com as Curvaturas do Site */}
               <View style={styles.imageContainer}>
                 {item.imgUrl1 && item.imgUrl1.trim() !== "" ? (
                   <Image
@@ -89,7 +98,6 @@ export default function ProductList() {
                     style={styles.productImage}
                   />
                 ) : (
-                  // Logo padrão caso não tenha foto do produto
                   <Image
                     source={require("../assets/logo.png")}
                     style={{ width: 180, height: 60, resizeMode: "contain" }}
@@ -97,7 +105,7 @@ export default function ProductList() {
                 )}
               </View>
 
-              {/* 2. CORPO DO CARD AZUL (INVERTIDO PREPARADO PARA MOBILE) */}
+              {/* Corpo do Card Azul */}
               <View style={styles.cardBody}>
                 <Text style={styles.productName}>
                   {item.productName || item.name}
@@ -114,7 +122,7 @@ export default function ProductList() {
                   )}
                 </Text>
 
-                {/* 3. REGRAS DOS VIDROS BASEADO NO SEU COMPONENTE NEXT.JS */}
+                {/* Especificações dos Vidros */}
                 <View style={styles.specsContainer}>
                   {qtdConvencional > 0 && (
                     <Text style={styles.specText}>
@@ -129,7 +137,7 @@ export default function ProductList() {
                   )}
                 </View>
 
-                {/* 4. BOTÃO VER MAIS BRANCO COM CANTO CORTADO (Estilo rounded-[10px_0] do site) */}
+                {/* Botão Ver Mais Branco Estilo Clássico Soft */}
                 <TouchableOpacity
                   style={styles.actionButton}
                   activeOpacity={0.9}
@@ -164,51 +172,74 @@ export default function ProductList() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F7",
+    backgroundColor: "#EBF1F8", // Fundo azulado premium padrão
   },
   center: {
     flex: 1,
-    backgroundColor: "#F5F5F7",
+    backgroundColor: "#EBF1F8",
     justifyContent: "center",
     alignItems: "center",
   },
   loadingText: {
     marginTop: 12,
     color: "#484848",
-    fontSize: 16,
+    fontSize: 15,
+    fontWeight: "600",
   },
+  /* ESTILOS DO HEADER COM LOGO */
+  header: {
+    alignItems: "center",
+    paddingVertical: 14,
+    backgroundColor: "#FFFFFF",
+  },
+  logo: {
+    width: 180,
+    height: 48,
+  },
+  /* SUB-HEADER VOLTAR SLIM */
   navHeader: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    justifyContent: "flex-start",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     backgroundColor: "#FFFFFF",
     borderBottomWidth: 1,
     borderBottomColor: "#DFDFE7",
   },
   backButton: {
-    marginRight: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F5F5F7",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#E4E4ED",
   },
-  navTitle: {
-    fontSize: 14,
+  backButtonText: {
+    fontSize: 13,
     color: "#484848",
-    fontWeight: "500",
+    fontWeight: "700",
+    marginLeft: 2,
   },
   listContent: {
     padding: 20,
+    paddingBottom: 40,
   },
+  /* CARD DESIGN ORIGINAL PRESERVA SEU DECORADO */
   card: {
-    backgroundColor: "#1C61AC", // Cor azul oficial do site
-    borderTopRightRadius: 40, // rounded-tr-[40px]
-    borderBottomLeftRadius: 40, // rounded-bl-[40px]
+    backgroundColor: "#1C61AC",
+    borderTopRightRadius: 40,
+    borderBottomLeftRadius: 40,
     marginBottom: 30,
     overflow: "hidden",
     borderWidth: 1,
     borderColor: "#DFDFE7",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
+    shadowColor: "#1C61AC",
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.1,
-    shadowRadius: 6,
+    shadowRadius: 12,
     elevation: 4,
   },
   imageContainer: {
@@ -217,8 +248,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 16,
-    borderTopRightRadius: 38, // Acompanha o corte do card principal
-    borderBottomLeftRadius: 40, // Faz a curva linda separando a imagem do bloco azul
+    borderTopRightRadius: 38,
+    borderBottomLeftRadius: 40,
   },
   productImage: {
     width: "100%",
@@ -274,13 +305,12 @@ const styles = StyleSheet.create({
     height: 42,
     alignItems: "center",
     justifyContent: "center",
-    // Estilo clássico Soft do Next rounded-[10px_0] replicado no mobile:
     borderTopLeftRadius: 10,
     borderBottomRightRadius: 10,
   },
   actionButtonText: {
     color: "#484848",
-    fontWeight: "500",
+    fontWeight: "600",
     fontSize: 14,
     letterSpacing: 1.6,
   },

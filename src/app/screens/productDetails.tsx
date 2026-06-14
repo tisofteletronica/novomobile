@@ -2,28 +2,29 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, Download } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Image,
-    Linking,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Image,
+  Linking,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
-// 1. IMPORTA A SUA FUNÇÃO E INTERFACE REAIS DO SEU ARQUIVO DE SERVIÇO
+// IMPORTAÇÃO CORRETA DA ÁREA SEGURA PARA DESTRUIR OS AVISOS DO CONSOLE
+import { SafeAreaView } from "react-native-safe-area-context";
+
+// Importação das suas interfaces e serviços reais
 import {
-    getProductsByModelAndCategory,
-    ProductsByModelAndCategoryResponse,
-} from "@/src/services/searchService/products"; // Ajuste o caminho conforme necessário
+  getProductsByModelAndCategory,
+  ProductsByModelAndCategoryResponse,
+} from "@/src/services/searchService/products";
 
 export default function ProductDetails() {
   const router = useRouter();
   const params = useLocalSearchParams();
 
-  // Tipagem correta usando o array extraído do seu content
   const [product, setProduct] = useState<
     ProductsByModelAndCategoryResponse["content"][number] | null
   >(null);
@@ -37,23 +38,19 @@ export default function ProductDetails() {
   const year = String(params.year);
   const category = String(params.categoryId);
 
-  // 2. O FILTRO SEGUINDO EXATAMENTE A REGRA DO SEU TYPESCRIPT E NEXT.JS
   useEffect(() => {
     if (model && year && category && id) {
       setLoading(true);
 
-      // Bate no seu endpoint real com paginação padrão ampla para trazer o escopo completo
       getProductsByModelAndCategory(model, year, category, 0, 1000)
         .then((data) => {
           const list = data?.content || [];
 
-          // Encontra o produto ativo clicado na tela anterior
           const currentProduct = list.find((p) => Number(p.id) === Number(id));
           setProduct(currentProduct || null);
 
-          // Filtra os itens relacionados tirando o atual (Regra do seu GetToKnow)
           const related = list.filter((p) => Number(p.id) !== Number(id));
-          setRelatedProducts(related.slice(0, 3)); // Garante até 3 itens na base
+          setRelatedProducts(related.slice(0, 3));
         })
         .catch((err) =>
           console.error("Erro na busca de detalhes via TypeScript:", err),
@@ -85,34 +82,42 @@ export default function ProductDetails() {
   const qtdInteligente = Number(product.vidroInteligente) || 0;
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* HEADER DE NAVEGAÇÃO FIXO */}
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      {/* 1. HEADER PADRONIZADO DA SOFT ELETRÔNICA */}
+      <View style={styles.header}>
+        <Image
+          source={require("../assets/logo.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      </View>
+
+      {/* 2. SUB-HEADER CLEAN COM BOTÃO VOLTAR EM CÁPSULA */}
       <View style={styles.navHeader}>
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.backButton}
+          activeOpacity={0.6}
         >
-          <ChevronLeft size={24} color="#484848" />
+          <ChevronLeft size={20} color="#FC4C02" strokeWidth={3} />
+          <Text style={styles.backButtonText}>Voltar</Text>
         </TouchableOpacity>
-        <Text style={styles.navTitle} numberOfLines={1}>
-          Soft Eletrônica {">"} {product.productName}
-        </Text>
       </View>
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* TITULO PRINCIPAL */}
+        {/* TÍTULO PRINCIPAL DO PRODUTO */}
         <View style={styles.titleContainer}>
           <Text style={styles.mainTitle}>{product.productName}</Text>
           <Text style={styles.mainSubtitle}>{product.codigo}</Text>
-          <View style={styles.blueLine} />
+          <View style={styles.orangeLine} />
         </View>
 
         {/* CARD PRINCIPAL DE CONTEÚDO */}
         <View style={styles.mainArticleCard}>
-          {/* CONTAINER DA IMAGEM */}
+          {/* CONTAINER DA IMAGEM BRANCO */}
           <View style={styles.productImageWrapper}>
             {product.imgUrl1 ? (
               <Image
@@ -127,7 +132,7 @@ export default function ProductDetails() {
             )}
           </View>
 
-          {/* SESSÃO GARANTIA DE 2 ANOS */}
+          {/* SEÇÃO GARANTIA DE 2 ANOS */}
           <View style={styles.garanteeBlock}>
             <View style={styles.garanteeBadge}>
               <Text style={styles.garanteeCheck}>✓</Text>
@@ -156,7 +161,7 @@ export default function ProductDetails() {
             )}
           </View>
 
-          {/* FICHA TÉCNICA (CONTAINER CINZA CLARO) */}
+          {/* FICHA TÉCNICA (CONTAINER CINZA ESPECÍFICO) */}
           <View style={styles.techSpecsCard}>
             <Text style={styles.specsHeaderTitle}>FICHA TÉCNICA:</Text>
             <Text style={styles.specsBodyText}>
@@ -177,25 +182,27 @@ export default function ProductDetails() {
           </View>
         </View>
 
-        {/* BOTÕES DE DOWNLOADS DOS MANUAIS */}
+        {/* BOTÕES DE DOWNLOADS DOS MANUAIS ESTILO CORTADO SOFT */}
         <View style={styles.downloadButtonsWrapper}>
           {product.urlManual && product.urlManual.trim() !== "" && (
             <TouchableOpacity
               style={styles.downloadButton}
+              activeOpacity={0.8}
               onPress={() => handleDownload(product.urlManual)}
             >
               <Text style={styles.downloadButtonText}>BAIXAR MANUAL</Text>
-              <Download size={18} color="#FFFFFF" />
+              <Download size={16} color="#FFFFFF" strokeWidth={2.5} />
             </TouchableOpacity>
           )}
 
           {product.urlEsquema && product.urlEsquema.trim() !== "" && (
             <TouchableOpacity
               style={styles.downloadButton}
+              activeOpacity={0.8}
               onPress={() => handleDownload(product.urlEsquema)}
             >
               <Text style={styles.downloadButtonText}>BAIXAR ESQUEMA</Text>
-              <Download size={18} color="#FFFFFF" />
+              <Download size={16} color="#FFFFFF" strokeWidth={2.5} />
             </TouchableOpacity>
           )}
         </View>
@@ -204,7 +211,7 @@ export default function ProductDetails() {
         {relatedProducts.length > 0 && (
           <View style={styles.relatedSection}>
             <Text style={styles.relatedTitle}>CONHEÇA TAMBÉM</Text>
-            <View style={styles.relatedBlueLine} />
+            <View style={styles.relatedOrangeLine} />
 
             {relatedProducts.map((item, index) => (
               <View key={item.id || index} style={styles.relatedCard}>
@@ -223,12 +230,12 @@ export default function ProductDetails() {
 
                   <TouchableOpacity
                     style={styles.relatedButton}
+                    activeOpacity={0.8}
                     onPress={() => {
-                      // Recarrega dinamicamente o hook alterando o param ID
                       router.setParams({ id: String(item.id) });
                     }}
                   >
-                    <Text style={styles.relatedButtonText}>VER MAIS</Text>
+                    <Text style={styles.relatedButtonText}>VER DETALHES</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -240,180 +247,287 @@ export default function ProductDetails() {
   );
 }
 
-// OS ESTILOS NATIVOS PERMANECEM ACURADOS ABAIXO...
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F5F5F7" },
+  container: {
+    flex: 1,
+    backgroundColor: "#EBF1F8", // Tom de fundo padrão unificado
+  },
   center: {
     flex: 1,
-    backgroundColor: "#F5F5F7",
+    backgroundColor: "#EBF1F8",
     justifyContent: "center",
     alignItems: "center",
   },
-  loadingText: { marginTop: 12, color: "#484848", fontSize: 16 },
+  loadingText: {
+    marginTop: 12,
+    color: "#484848",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  /* ESTILOS DO HEADER COM LOGO */
+  header: {
+    alignItems: "center",
+    paddingVertical: 14,
+    backgroundColor: "#FFFFFF",
+  },
+  logo: {
+    width: 180,
+    height: 48,
+  },
+  /* SUB-HEADER VOLTAR SLIM CAPSULA */
   navHeader: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    justifyContent: "flex-start",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     backgroundColor: "#FFFFFF",
     borderBottomWidth: 1,
     borderBottomColor: "#DFDFE7",
   },
-  backButton: { marginRight: 12 },
-  navTitle: { fontSize: 14, color: "#484848", fontWeight: "500", flex: 1 },
-  scrollContent: { paddingBottom: 60 },
-  titleContainer: { paddingHorizontal: 24, marginTop: 24, marginBottom: 20 },
-  mainTitle: { fontSize: 32, fontWeight: "bold", color: "#252429" },
-  mainSubtitle: {
-    fontSize: 14,
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F5F5F7",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#E4E4ED",
+  },
+  backButtonText: {
+    fontSize: 13,
     color: "#484848",
+    fontWeight: "700",
+    marginLeft: 2,
+  },
+  scrollContent: {
+    paddingBottom: 40,
+  },
+  titleContainer: {
+    paddingHorizontal: 24,
+    marginTop: 24,
+    marginBottom: 20,
+  },
+  mainTitle: {
+    fontSize: 30,
+    fontWeight: "800",
+    color: "#252429",
+  },
+  mainSubtitle: {
+    fontSize: 13,
+    color: "#74747A",
     letterSpacing: 1.4,
     marginTop: 4,
+    fontWeight: "600",
     textTransform: "uppercase",
   },
-  blueLine: { width: 60, height: 4, backgroundColor: "#1C61AC", marginTop: 12 },
+  orangeLine: {
+    width: 50,
+    height: 4,
+    backgroundColor: "#FC4C02", // Laranja Soft trazendo energia pra tela
+    marginTop: 12,
+  },
   mainArticleCard: {
     backgroundColor: "#FFFFFF",
-    marginHorizontal: 16,
-    borderRadius: 24,
-    borderWidth: 3,
-    borderColor: "#F7F6FB",
+    marginHorizontal: 20,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: "#DFDFE7",
     overflow: "hidden",
     paddingBottom: 24,
+    shadowColor: "#1C61AC",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    elevation: 3,
   },
   productImageWrapper: {
-    height: 280,
+    height: 260,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
     padding: 16,
   },
-  mainProductImage: { width: "100%", height: "100%", resizeMode: "contain" },
+  mainProductImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "contain",
+  },
   garanteeBlock: {
     flexDirection: "row",
     paddingHorizontal: 20,
-    marginTop: 24,
+    marginTop: 20,
     alignItems: "flex-start",
   },
   garanteeBadge: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: "#1C61AC",
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 14,
+    marginRight: 12,
+    marginTop: 2,
   },
-  garanteeCheck: { color: "#FFFFFF", fontSize: 20, fontWeight: "bold" },
-  garanteeTexts: { flex: 1 },
-  garanteeTitle: {
-    fontSize: 20,
+  garanteeCheck: {
+    color: "#FFFFFF",
+    fontSize: 16,
     fontWeight: "bold",
+  },
+  garanteeTexts: {
+    flex: 1,
+  },
+  garanteeTitle: {
+    fontSize: 16,
+    fontWeight: "800",
     color: "#1C61AC",
-    letterSpacing: 1,
+    letterSpacing: 0.5,
     marginBottom: 4,
   },
-  garanteeDescription: { fontSize: 14, color: "#484848", lineHeight: 18 },
+  garanteeDescription: {
+    fontSize: 13,
+    color: "#74747A",
+    lineHeight: 18,
+  },
   measuresBlock: {
     alignItems: "center",
-    marginVertical: 24,
+    marginVertical: 20,
     paddingHorizontal: 20,
   },
   measureItem: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "bold",
     color: "#1C61AC",
-    marginTop: 6,
+    marginTop: 4,
   },
   techSpecsCard: {
-    backgroundColor: "#F7F6FB",
-    padding: 24,
-    borderBottomLeftRadius: 40,
-    borderBottomRightRadius: 40,
+    backgroundColor: "#F4F7FB",
+    padding: 20,
+    marginHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#EBF1F8",
   },
   specsHeaderTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#484848",
-    letterSpacing: 1.5,
-    marginBottom: 10,
-    textAlign: "center",
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#252429",
+    letterSpacing: 1,
+    marginBottom: 8,
   },
   specsBodyText: {
-    fontSize: 15,
+    fontSize: 14,
     color: "#484848",
-    lineHeight: 22,
+    lineHeight: 20,
     textAlign: "justify",
-    letterSpacing: 0.5,
   },
   downloadButtonsWrapper: {
     flexDirection: "row",
     justifyContent: "center",
     gap: 12,
     marginTop: 24,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
   },
   downloadButton: {
     flex: 1,
     flexDirection: "row",
     backgroundColor: "#1C61AC",
-    paddingVertical: 14,
-    borderRadius: 8,
+    height: 48,
     justifyContent: "center",
     alignItems: "center",
-    borderTopLeftRadius: 10,
-    borderBottomRightRadius: 10,
+    borderTopLeftRadius: 14,
+    borderBottomRightRadius: 14,
+    borderTopRightRadius: 4,
+    borderBottomLeftRadius: 4,
+    shadowColor: "#1C61AC",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 2,
   },
   downloadButtonText: {
     color: "#FFFFFF",
     fontWeight: "bold",
     fontSize: 12,
-    letterSpacing: 1,
-    marginRight: 8,
+    letterSpacing: 0.8,
+    marginRight: 6,
   },
-  relatedSection: { marginTop: 48, paddingHorizontal: 16 },
-  relatedTitle: { fontSize: 24, fontWeight: "bold", color: "#252429" },
-  relatedBlueLine: {
-    width: 50,
+  relatedSection: {
+    marginTop: 44,
+    paddingHorizontal: 20,
+  },
+  relatedTitle: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#252429",
+  },
+  relatedOrangeLine: {
+    width: 40,
     height: 4,
-    backgroundColor: "#1C61AC",
+    backgroundColor: "#FC4C02",
     marginTop: 10,
     marginBottom: 24,
   },
   relatedCard: {
     backgroundColor: "#1C61AC",
-    borderTopRightRadius: 30,
-    borderBottomLeftRadius: 30,
+    borderTopRightRadius: 40,
+    borderBottomLeftRadius: 40,
     marginBottom: 24,
     overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#DFDFE7",
   },
   relatedImgContainer: {
     backgroundColor: "#FFFFFF",
-    height: 160,
+    height: 180,
     justifyContent: "center",
     alignItems: "center",
+    borderBottomLeftRadius: 40,
   },
-  relatedProductImage: { width: "80%", height: "80%", resizeMode: "contain" },
-  relatedCardBody: { padding: 20, alignItems: "center" },
-  relatedItemName: { fontSize: 20, fontWeight: "bold", color: "#FFFFFF" },
+  relatedProductImage: {
+    width: "75%",
+    height: "75%",
+    resizeMode: "contain",
+  },
+  relatedCardBody: {
+    padding: 20,
+    alignItems: "center",
+  },
+  relatedItemName: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+  },
   relatedItemCode: {
     fontSize: 12,
-    color: "#DFDFE7",
+    color: "#E6F4FE",
+    fontWeight: "300",
     marginTop: 2,
-    marginBottom: 8,
+    marginBottom: 10,
+    letterSpacing: 1,
   },
   relatedItemResume: {
     fontSize: 14,
     color: "#FFFFFF",
     textAlign: "center",
-    marginBottom: 16,
+    lineHeight: 18,
+    marginBottom: 18,
+    opacity: 0.9,
   },
   relatedButton: {
     backgroundColor: "#FFFFFF",
-    paddingVertical: 8,
-    paddingHorizontal: 24,
-    borderTopLeftRadius: 8,
-    borderBottomRightRadius: 8,
+    height: 38,
+    paddingHorizontal: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    borderTopLeftRadius: 10,
+    borderBottomRightRadius: 10,
   },
-  relatedButtonText: { color: "#1C61AC", fontWeight: "bold", fontSize: 13 },
+  relatedButtonText: {
+    color: "#1C61AC",
+    fontWeight: "700",
+    fontSize: 12,
+    letterSpacing: 0.5,
+  },
 });
