@@ -4,7 +4,7 @@
     "slug": "softmobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/iconios.png",
     "scheme": "softmobile",
     "userInterfaceStyle": "light",
     "ios": {
@@ -13,10 +13,9 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
-      }
+        "foregroundImage": "./assets/images/icon2.png"
+      },
+      "package": "br.com.instalesoft"
     },
     "web": {
       "output": "static",
@@ -35,8 +34,14 @@
       ]
     ],
     "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
-    }
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "016d4568-effb-4ab3-9ba5-d5544e276bf5"
+      }
+    },
+    "owner": "jeanfurquim"
   }
 }

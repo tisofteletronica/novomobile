@@ -95,7 +95,16 @@ export default function ProductDetails() {
       {/* 2. SUB-HEADER CLEAN COM BOTÃO VOLTAR EM CÁPSULA */}
       <View style={styles.navHeader}>
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => {
+            // Força o retorno correto para a tela de categorias mantendo os dados do veículo
+            router.push({
+              pathname: "/screens/categoryList" as any,
+              params: {
+                modelId: model,
+                year: year,
+              },
+            });
+          }}
           style={styles.backButton}
           activeOpacity={0.6}
         >
